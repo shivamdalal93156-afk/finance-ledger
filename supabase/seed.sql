@@ -1,0 +1,2 @@
+-- Dev seed data (run manually after migrations in Step 2)
+-- Intentionally empty until auth + profiles are set up.

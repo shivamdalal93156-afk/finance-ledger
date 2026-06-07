@@ -1,0 +1,26 @@
+{
+  "name": "khataclone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KhataClone — Khatabook-style ledger app for small businesses",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "node patch-css-interop.js",
+    "dev:web": "npm run dev -w web",
+    "dev:mobile": "npm run start -w mobile",
+    "build:web": "npm run build -w web",
+    "lint:web": "npm run lint -w web"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "overrides": {
+    "tailwindcss": "3.4.19",
+    "ajv-keywords": {
+      "ajv": "^8.20.0"
+    }
+  }
+}
