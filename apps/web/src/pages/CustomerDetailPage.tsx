@@ -771,7 +771,13 @@ export function CustomerDetailPage() {
                   <input
                     type="date"
                     value={filterFrom}
-                    onChange={(e) => setFilterFrom(e.target.value)}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/\D/g, '')
+                      if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+                      if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7)
+                      if (val.length > 10) val = val.slice(0,10)
+                      setFilterFrom(val)
+                    }}
                     className="w-full px-3 py-2 rounded-xl border border-neutral-200 outline-none text-xs font-semibold text-text-primary bg-white focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                 </div>
@@ -783,7 +789,13 @@ export function CustomerDetailPage() {
                   <input
                     type="date"
                     value={filterTo}
-                    onChange={(e) => setFilterTo(e.target.value)}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/\D/g, '')
+                      if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+                      if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7)
+                      if (val.length > 10) val = val.slice(0,10)
+                      setFilterTo(val)
+                    }}
                     className="w-full px-3 py-2 rounded-xl border border-neutral-200 outline-none text-xs font-semibold text-text-primary bg-white focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                 </div>
@@ -1018,7 +1030,13 @@ export function CustomerDetailPage() {
                   type="date"
                   max={getLocalDateString()}
                   value={txDate}
-                  onChange={(e) => setTxDate(e.target.value)}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/\D/g, '')
+                    if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+                    if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7)
+                    if (val.length > 10) val = val.slice(0,10)
+                    setTxDate(val)
+                  }}
                   className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none font-medium text-text-primary"
                   disabled={isSubmitting}
                 />

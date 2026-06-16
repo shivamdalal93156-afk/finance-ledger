@@ -589,7 +589,13 @@ export function StaffDetailPage() {
                 <input
                   type="date"
                   value={editJoinDate}
-                  onChange={(e) => setEditJoinDate(e.target.value)}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/\D/g, '')
+                    if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+                    if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7)
+                    if (val.length > 10) val = val.slice(0,10)
+                    setEditJoinDate(val)
+                  }}
                   className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none font-medium text-text-primary"
                   disabled={isSubmitting}
                 />

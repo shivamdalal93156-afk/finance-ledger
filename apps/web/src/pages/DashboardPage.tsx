@@ -550,7 +550,13 @@ export function DashboardPage() {
                         <input
                           type="date"
                           value={filterFrom}
-                          onChange={(e) => setFilterFrom(e.target.value)}
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/\D/g, '')
+                            if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+                            if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7)
+                            if (val.length > 10) val = val.slice(0,10)
+                            setFilterFrom(val)
+                          }}
                           className="w-full px-2 py-1 rounded-lg border border-neutral-200 outline-none text-[10px] font-semibold text-text-primary bg-white focus:border-primary"
                         />
                       </div>
@@ -561,7 +567,13 @@ export function DashboardPage() {
                         <input
                           type="date"
                           value={filterTo}
-                          onChange={(e) => setFilterTo(e.target.value)}
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/\D/g, '')
+                            if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+                            if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7)
+                            if (val.length > 10) val = val.slice(0,10)
+                            setFilterTo(val)
+                          }}
                           className="w-full px-2 py-1 rounded-lg border border-neutral-200 outline-none text-[10px] font-semibold text-text-primary bg-white focus:border-primary"
                         />
                       </div>
@@ -710,7 +722,13 @@ export function DashboardPage() {
                   <input
                     type="date"
                     value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/\D/g, '')
+                      if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+                      if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7)
+                      if (val.length > 10) val = val.slice(0,10)
+                      setSelectedDate(val)
+                    }}
                     max={new Date().toISOString().split('T')[0]}
                     className="px-4 py-2 rounded-xl border border-neutral-200 outline-none text-xs font-bold text-text-primary bg-neutral-50"
                   />
@@ -1101,7 +1119,13 @@ export function DashboardPage() {
                 <input
                   type="date"
                   value={staffJoinDate}
-                  onChange={(e) => setStaffJoinDate(e.target.value)}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/\D/g, '')
+                    if (val.length > 4) val = val.slice(0,4) + '-' + val.slice(4)
+                    if (val.length > 7) val = val.slice(0,7) + '-' + val.slice(7)
+                    if (val.length > 10) val = val.slice(0,10)
+                    setStaffJoinDate(val)
+                  }}
                   className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none font-medium text-text-primary"
                   disabled={isSubmitting}
                 />

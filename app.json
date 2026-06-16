@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "f641b0de-e54f-4a53-8483-e044897e90e4"
+      }
+    },
+    "android": {
+      "package": "com.shivam101.khataclone"
+    }
+  }
+}
