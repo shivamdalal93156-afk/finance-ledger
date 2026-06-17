@@ -1,0 +1,29 @@
+{
+  "cli": {
+    "version": ">= 20.1.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://vnbmaakyfcwhxvsyxaxl.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuYm1hYWt5ZmN3aHh2c3l4YXhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwODIzNTQsImV4cCI6MjA5NTY1ODM1NH0.3LD5ms7R60wgS9wCDeI7FNXBc6982D0yZBdAGXp6_00",
+        "EXPO_PUBLIC_APP_PASSWORD": "Khatabook2026"
+      }
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
