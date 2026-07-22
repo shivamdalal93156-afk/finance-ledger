@@ -15,23 +15,31 @@ export interface Profile {
 export interface Customer {
   id: string
   user_id: string
+  client_id?: string
   name: string
   phone: string | null
   address: string | null
   notes: string | null
   created_at: string
+  is_syncing?: boolean
+  is_failed?: boolean
+  sync_error?: string
 }
 
 export interface Transaction {
   id: string
   user_id: string
   customer_id: string
+  client_id?: string
   type: TransactionType
   amount: number
   note: string | null
   entry_date: string
   is_edited: boolean
   created_at: string
+  is_syncing?: boolean
+  is_failed?: boolean
+  sync_error?: string
 }
 
 export interface Staff {

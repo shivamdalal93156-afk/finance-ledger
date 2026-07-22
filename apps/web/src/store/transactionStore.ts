@@ -4,6 +4,7 @@ import { useAuthStore } from './authStore'
 import { transactionSchema } from '@khataclone/shared/validators'
 import type { Transaction } from '@khataclone/shared/types'
 import type { z } from 'zod'
+import { enqueueItem, generateUUID, onSyncSuccess, onSyncFailure, initSyncQueue } from '../lib/syncQueue'
 
 type TransactionInput = z.infer<typeof transactionSchema>
 
@@ -100,26 +101,25 @@ export const useTransactionStore = create<TransactionState>((set) => ({
         throw new Error(parseResult.error.errors[0]?.message || 'Invalid transaction details')
       }
 
-      const { data, error } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: userId,
-          customer_id: customerId,
-          type: parseResult.data.type,
-          amount: parseResult.data.amount,
-          note: parseResult.data.note || null,
-          entry_date: parseResult.data.entry_date || new Date().toLocaleDateString('en-CA'),
-          is_edited: false,
-        })
-        .select()
-        .single()
+      const txEntryDate = parseResult.data.entry_date || new Date().toLocaleDateString('en-CA')
+      const client_id = generateUUID()
 
-      if (error) throw error
+      const newTx: Transaction = {
+        id: client_id,
+        user_id: userId,
+        customer_id: customerId,
+        client_id: client_id,
+        type: parseResult.data.type,
+        amount: parseResult.data.amount,
+        note: parseResult.data.note || null,
+        entry_date: txEntryDate,
+        is_edited: false,
+        created_at: new Date().toISOString(),
+        is_syncing: true,
+      }
 
-      const newTx = data as Transaction
       set((state) => {
         const customerTx = state.transactions[customerId] || []
-        // Insert and sort: entry_date desc, then created_at desc
         const updatedTx = [newTx, ...customerTx].sort((a, b) => {
           const dateDiff = new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
           if (dateDiff !== 0) return dateDiff
@@ -134,6 +134,19 @@ export const useTransactionStore = create<TransactionState>((set) => ({
           isLoading: false,
         }
       })
+
+      const payload = {
+        user_id: userId,
+        customer_id: customerId,
+        client_id: client_id,
+        type: parseResult.data.type,
+        amount: parseResult.data.amount,
+        note: parseResult.data.note || null,
+        entry_date: txEntryDate,
+        is_edited: false,
+      }
+
+      await enqueueItem('transaction', payload)
 
       return newTx
     } catch (err: any) {
@@ -216,3 +229,57 @@ export const useTransactionStore = create<TransactionState>((set) => ({
     }
   },
 }))
+
+// Listen for sync queue success events
+onSyncSuccess((type, client_id, syncedData) => {
+  if (type !== 'transaction') return
+  useTransactionStore.setState((state) => {
+    const customerId = syncedData.customer_id
+    if (!customerId) return state
+    const customerTx = state.transactions[customerId] || []
+    const updatedList = customerTx.map((t) => {
+      if (t.client_id === client_id || t.id === client_id) {
+        return {
+          ...t,
+          ...syncedData,
+          is_syncing: false,
+        }
+      }
+      return t
+    })
+
+    return {
+      transactions: {
+        ...state.transactions,
+        [customerId]: updatedList,
+      },
+    }
+  })
+})
+
+// Listen for sync queue failure events (permanent errors)
+onSyncFailure((type, client_id, errorMessage) => {
+  if (type !== 'transaction') return
+  useTransactionStore.setState((state) => {
+    const updatedGrouped: Record<string, Transaction[]> = {}
+    Object.keys(state.transactions).forEach((custKey) => {
+      updatedGrouped[custKey] = state.transactions[custKey].map((t) => {
+        if (t.client_id === client_id || t.id === client_id) {
+          return {
+            ...t,
+            is_syncing: false,
+            is_failed: true,
+            sync_error: errorMessage,
+          } as Transaction
+        }
+        return t
+      })
+    })
+
+    return { transactions: updatedGrouped }
+  })
+})
+
+// Initialize sync queue on app startup
+initSyncQueue()
+

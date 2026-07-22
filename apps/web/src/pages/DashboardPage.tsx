@@ -73,6 +73,7 @@ export function DashboardPage() {
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmitting) return
     setSubmitError(null)
     setIsSubmitting(true)
 
@@ -454,6 +455,11 @@ export function DashboardPage() {
                                   {customer.balance === 0 && (
                                     <span className="inline-flex items-center rounded-full bg-success/15 px-2.5 py-0.5 text-[10px] font-bold text-success border border-success/30 animate-pulse-subtle">
                                       Settled ✓
+                                    </span>
+                                  )}
+                                  {customer.is_syncing && (
+                                    <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-300">
+                                      ⏳ Syncing
                                     </span>
                                   )}
                                 </div>

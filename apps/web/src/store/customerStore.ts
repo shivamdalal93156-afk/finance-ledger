@@ -4,6 +4,7 @@ import { useAuthStore } from './authStore'
 import { customerSchema } from '@khataclone/shared/validators'
 import type { Customer } from '@khataclone/shared/types'
 import type { z } from 'zod'
+import { enqueueItem, generateUUID, onSyncSuccess, onSyncFailure } from '../lib/syncQueue'
 
 type CustomerInput = z.infer<typeof customerSchema>
 
@@ -60,25 +61,34 @@ export const useCustomerStore = create<CustomerState>((set) => ({
         throw new Error(parseResult.error.errors[0]?.message || 'Invalid customer details')
       }
 
-      const { data, error } = await supabase
-        .from('customers')
-        .insert({
-          user_id: userId,
-          name: parseResult.data.name,
-          phone: parseResult.data.phone || null,
-          address: parseResult.data.address || null,
-          notes: parseResult.data.notes || null,
-        })
-        .select()
-        .single()
+      const client_id = generateUUID()
+      const newCustomer: Customer = {
+        id: client_id,
+        user_id: userId,
+        client_id: client_id,
+        name: parseResult.data.name,
+        phone: parseResult.data.phone || null,
+        address: parseResult.data.address || null,
+        notes: parseResult.data.notes || null,
+        created_at: new Date().toISOString(),
+        is_syncing: true,
+      }
 
-      if (error) throw error
-
-      const newCustomer = data as Customer
       set((state) => ({
         customers: [...state.customers, newCustomer].sort((a, b) => a.name.localeCompare(b.name)),
         isLoading: false,
       }))
+
+      const payload = {
+        user_id: userId,
+        client_id: client_id,
+        name: parseResult.data.name,
+        phone: parseResult.data.phone || null,
+        address: parseResult.data.address || null,
+        notes: parseResult.data.notes || null,
+      }
+
+      await enqueueItem('customer', payload)
 
       return newCustomer
     } catch (err: any) {
@@ -149,3 +159,43 @@ export const useCustomerStore = create<CustomerState>((set) => ({
     }
   },
 }))
+
+// Listen for sync queue success events
+onSyncSuccess((type, client_id, syncedData) => {
+  if (type !== 'customer') return
+  useCustomerStore.setState((state) => ({
+    customers: state.customers
+      .map((c) => {
+        if (c.client_id === client_id || c.id === client_id) {
+          return {
+            ...c,
+            ...syncedData,
+            is_syncing: false,
+          }
+        }
+        return c
+      })
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  }))
+})
+
+// Listen for sync queue failure events (permanent errors)
+onSyncFailure((type, client_id, errorMessage) => {
+  if (type !== 'customer') return
+  useCustomerStore.setState((state) => ({
+    customers: state.customers
+      .map((c) => {
+        if (c.client_id === client_id || c.id === client_id) {
+          return {
+            ...c,
+            is_syncing: false,
+            is_failed: true,
+            sync_error: errorMessage,
+          }
+        }
+        return c
+      })
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  }))
+})
+

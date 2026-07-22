@@ -153,6 +153,7 @@ export function CustomerDetailPage() {
 
   const handleAddTxSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmitting) return
     if (!id) return
     setTxError(null)
     setIsSubmitting(true)
@@ -160,6 +161,12 @@ export function CustomerDetailPage() {
     const amount = parseFloat(txAmount)
     if (isNaN(amount) || amount <= 0) {
       setTxError('Amount must be greater than 0')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (amount > 99999999.99) {
+      setTxError('Amount cannot exceed ₹9,99,99,999.99')
       setIsSubmitting(false)
       return
     }
@@ -196,6 +203,7 @@ export function CustomerDetailPage() {
 
   const handleEditTxSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmitting) return
     if (!id || !selectedTxId) return
     setEditTxError(null)
     setIsSubmitting(true)
@@ -321,6 +329,10 @@ export function CustomerDetailPage() {
       if (!str) return ''
       const withRs = str.replace(/₹/g, 'Rs. ')
       return withRs.replace(/[^\x20-\x7E]/g, '')
+    }
+
+    const getPdfLabel = (type: 'credit' | 'debit') => {
+      return type === 'debit' ? 'Credit' : 'Debit'
     }
 
     const formatPDFAmount = (amount: number): string => {
@@ -472,7 +484,7 @@ export function CustomerDetailPage() {
       const txDateStr = `${datePart}, ${timePart}`
 
       const isCredit = tx.type === 'credit'
-      const description = cleanASCII(tx.note || (isCredit ? 'Credit entry' : 'Received payment'))
+      const description = cleanASCII(tx.note || getPdfLabel(tx.type))
       const gaveVal = isCredit ? formatPDFAmount(tx.amount) : ''
       const receivedVal = !isCredit ? formatPDFAmount(tx.amount) : ''
       
@@ -857,6 +869,12 @@ export function CustomerDetailPage() {
               )}
             </div>
 
+            {filteredTransactions.some((t) => t.is_failed) && (
+              <div className="mx-6 my-3 p-3 bg-danger/10 border border-danger/20 rounded-xl text-xs font-bold text-danger">
+                ⚠️ Entry failed to save: {filteredTransactions.find((t) => t.is_failed)?.sync_error || 'Database rejected entry.'} Please check and re-add.
+              </div>
+            )}
+
             {isTxLoading && txList.length === 0 ? (
               <div className="py-20 flex flex-col items-center justify-center">
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-neutral-200 border-t-primary"></div>
@@ -873,7 +891,7 @@ export function CustomerDetailPage() {
                 <p className="mx-auto mt-2 max-w-sm text-xs text-text-secondary leading-relaxed">
                   {appliedFrom || appliedTo
                     ? 'Try adjusting From / To date range limits.'
-                    : 'Record gave (credit) or received (debit) transactions using the buttons below to populate ledger records.'}
+                    : 'Record You Gave or You Got transactions using the buttons below to populate ledger records.'}
                 </p>
               </div>
             ) : (
@@ -903,6 +921,16 @@ export function CustomerDetailPage() {
                           {tx.is_edited && (
                             <span className="bg-neutral-200 text-text-secondary text-[8px] font-bold px-1.5 py-0.5 rounded">
                               EDITED
+                            </span>
+                          )}
+                          {tx.is_syncing && (
+                            <span className="bg-amber-100 text-amber-800 border border-amber-300 text-[8px] font-bold px-1.5 py-0.5 rounded">
+                              ⏳ SYNCING
+                            </span>
+                          )}
+                          {tx.is_failed && (
+                            <span className="bg-danger/10 text-danger border border-danger/30 text-[8px] font-bold px-1.5 py-0.5 rounded">
+                              ⚠️ FAILED
                             </span>
                           )}
                         </div>
@@ -951,13 +979,13 @@ export function CustomerDetailPage() {
             onClick={() => handleOpenAddTxModal('credit')}
             className="flex-1 h-[56px] rounded-xl bg-danger hover:bg-danger/90 text-white font-extrabold tracking-wider shadow-md active:scale-[0.98] flex items-center justify-center text-base"
           >
-            🔴 GAVE (CREDIT)
+            🔴 You Gave
           </button>
           <button
             onClick={() => handleOpenAddTxModal('debit')}
             className="flex-1 h-[56px] rounded-xl bg-success hover:bg-success/90 text-white font-extrabold tracking-wider shadow-md active:scale-[0.98] flex items-center justify-center text-base"
           >
-            🟢 RECEIVED (DEBIT)
+            🟢 You Got
           </button>
         </div>
       </div>
@@ -971,7 +999,7 @@ export function CustomerDetailPage() {
               txModalType === 'credit' ? 'bg-danger' : 'bg-success'
             }`}>
               <h3 className="text-lg font-bold">
-                {txModalType === 'credit' ? 'You Gave (Credit)' : 'You Received (Debit)'}
+                {txModalType === 'credit' ? 'You Gave' : 'You Got'}
               </h3>
               <button
                 type="button"
@@ -1103,7 +1131,7 @@ export function CustomerDetailPage() {
                 <input
                   type="text"
                   disabled
-                  value={editTxType === 'credit' ? 'GAVE (CREDIT) 🔴' : 'RECEIVED (DEBIT) 🟢'}
+                  value={editTxType === 'credit' ? 'You Gave 🔴' : 'You Got 🟢'}
                   className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 text-text-secondary font-bold cursor-not-allowed"
                 />
               </div>

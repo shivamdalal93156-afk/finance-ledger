@@ -26,7 +26,10 @@ export const customerSchema = z.object({
 
 export const transactionSchema = z.object({
   type: z.enum(['credit', 'debit']),
-  amount: z.coerce.number().positive('Amount must be greater than 0'),
+  amount: z.coerce
+    .number()
+    .positive('Amount must be greater than 0')
+    .max(99999999.99, 'Amount cannot exceed ₹9,99,99,999.99'),
   note: z.string().max(200).optional(),
   entry_date: z.string().date().optional(),
 })
