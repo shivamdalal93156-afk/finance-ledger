@@ -1,36 +1,40 @@
-# KhataClone
+# Finance Ledger (KhataClone)
 
-A Khatabook-style digital ledger for small business owners — track credit (gave) and debit (received) per customer.
+A Khatabook-style digital ledger for small business owners to track credit, debit, customers, and staff attendance/salary.
 
-**Platforms:** Web (React + Vite) · Mobile (Expo + React Native)
+**Platforms:** Web (React + Vite) · Mobile (Expo + React Native) · Telegram Bot (Node.js)
 
-## Monorepo structure
+## Monorepo Structure
 
-```
-apps/web/          → React + Vite + Tailwind
-apps/mobile/       → Expo + NativeWind + Expo Router
-packages/shared/   → Shared types, Zod validators, utils
-supabase/          → SQL migrations + seed data
+```text
+apps/
+  web/             # React + Vite + Tailwind web app
+  mobile/          # Expo + NativeWind + Expo Router mobile app
+bot/               # Telegram bot for account status & undo helpers
+packages/
+  shared/          # Shared types, Zod validators, and utilities
+supabase/          # SQL migrations and seed data
 ```
 
 ## Prerequisites
 
 - Node.js 20+
 - npm 10+
-- [Supabase](https://supabase.com) project (create in Step 2)
+- A [Supabase](https://supabase.com) project
 
 ## Setup
 
-```bash
-# Install all workspace dependencies
-npm install
+1. Install workspace dependencies:
+   ```bash
+   npm install
+   ```
 
-# Web — copy env template and add your Supabase keys
-cp apps/web/.env.example apps/web/.env
-
-# Mobile — copy env template and add your Supabase keys
-cp apps/mobile/.env.example apps/mobile/.env
-```
+2. Configure environment variables from the templates:
+   ```bash
+   cp apps/web/.env.example apps/web/.env
+   cp bot/.env.example bot/.env
+   ```
+   Fill in your Supabase URL/keys, `BOT_TOKEN`, and `AUTHORIZED_CHAT_ID` in the `.env` files.
 
 ## Development
 
@@ -38,8 +42,11 @@ cp apps/mobile/.env.example apps/mobile/.env
 # Web (http://localhost:5173)
 npm run dev:web
 
-# Mobile (Expo Go / emulator)
+# Mobile (Expo)
 npm run dev:mobile
+
+# Telegram Bot
+cd bot && npm install && npm start
 ```
 
 ## Build
@@ -48,33 +55,12 @@ npm run dev:mobile
 npm run build:web
 ```
 
-## Database migrations (Step 2)
+## Database Migrations
 
-Migration file: `supabase/migrations/20240605000000_initial_schema.sql`
-
-**Option A — Supabase Dashboard (easiest)**
-
-1. Open your project → **SQL Editor** → **New query**
-2. Paste the full contents of the migration file
-3. Click **Run**
-4. Confirm tables appear under **Table Editor**: `profiles`, `customers`, `transactions`, `staff`, `attendance`
-
-**Option B — Supabase CLI**
+Migrations live in `supabase/migrations/`. Apply them via the Supabase SQL Editor or Supabase CLI:
 
 ```bash
 npx supabase login
 npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push
 ```
-
-## Architecture
-
-See [KHATABOOK_CLONE_MASTER_DOC.md](./KHATABOOK_CLONE_MASTER_DOC.md) for the full architecture, schema, and phase plan.
-
-### Current progress
-
-- [x] **Step 1** — Project setup (monorepo, web, mobile, shared package)
-- [x] **Step 2** — Database migrations written (run on Supabase — see below)
-- [ ] **Step 3** — Phone OTP auth + business profile
-- [ ] **Step 4** — Customer CRUD
-- [ ] **Step 5** — Ledger entries

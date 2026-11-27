@@ -7,6 +7,11 @@ const AUTHORIZED_CHAT_ID = process.env.AUTHORIZED_CHAT_ID
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_KEY
 
+if (!BOT_TOKEN || !AUTHORIZED_CHAT_ID || !SUPABASE_URL || !SUPABASE_KEY) {
+  console.error('Missing required environment variables: BOT_TOKEN, AUTHORIZED_CHAT_ID, SUPABASE_URL, SUPABASE_KEY')
+  process.exit(1)
+}
+
 const bot = new TelegramBot(BOT_TOKEN, { polling: true })
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
